@@ -1,0 +1,54 @@
+schema_version: 1
+
+agents:
+  - id: watchdog
+    entry: watchdog_agent.agent.root_agent
+  - id: data_detection
+    entry: data_detection_agent.agent.root_agent
+  - id: consent_agent
+    entry: consent_agent.agent.root_agent
+  - id: redaction_agent
+    entry: redaction_agent.agent.root_agent
+  - id: audit_agent
+    entry: audit_agent.agent.root_agent
+
+orchestration:
+  entry_point: watchdog
+
+  steps:
+    # Step 1: File Ingestion (Watchdog → Data Detection)
+    - source: watchdog
+      target: data_detection
+      mapping:
+        file_path: event_payload.file_path
+        event_type: event_payload.event_type
+        timestamp: event_payload.timestamp
+        user_id: event_payload.user_id
+
+    # Step 2: PII Detection (Data Detection → Consent Agent)
+    - source: data_detection
+      target: consent_agent
+      mapping:
+        file_path: file_path
+        pii_findings: pii_findings
+        user_id: user_id
+        status: status
+
+    # Step 3: Consent Verification (Consent Agent → Redaction Agent)
+    - source: consent_agent
+      target: redaction_agent
+      mapping:
+        file_path: file_path
+        pii_findings: pii_findings
+        consent_results: consent_results
+        user_id: user_id
+
+    # Step 4: PII Redaction (Redaction Agent → Audit Agent)
+    - source: redaction_agent
+      target: audit_agent
+      mapping:
+        file_path: file_path
+        pii_findings: pii_findings
+        consent_results: consent_results
+        redaction_result: redaction_result
+        user_id: user_id

@@ -1,0 +1,8 @@
+watchdog
+google-cloud-dlp>=3.0.0
+google-cloud-firestore>=2.0.0
+google-cloud-bigquery>=3.0.0
+presidio-analyzer>=2.0.0
+presidio-anonymizer>=2.0.0
+google-adk-agents
+python-dotenv>=1.0.0
